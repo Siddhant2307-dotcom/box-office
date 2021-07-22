@@ -1,10 +1,17 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useReducer, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import Cast from '../components/show/Cast';
+import Details from '../components/show/Details';
+// import { Details } from '../components/show/Details';
+import Seasons from '../components/show/Seasons';
+import ShowMaineData from '../components/show/ShowMaineData';
 import { apiGet } from '../misc/config';
+import { InfoBlock, ShowPageWrapper } from './Show.styled';
 
 const reducer = (prevState, action) => {
   switch (action.type) {
-    case 'FETCH_SUCESS': {
+    case 'FETCH_SUCCESS': {
       return { isLoading: false, error: null, show: action.show };
     }
 
@@ -19,7 +26,7 @@ const reducer = (prevState, action) => {
 const initialState = {
   show: null,
   isLoading: true,
-  error: true,
+  error: null,
 };
 
 const Show = () => {
@@ -43,7 +50,7 @@ const Show = () => {
         }
       })
       .catch(err => {
-        if (isMounted) {
+        if (!isMounted) {
           dispatch({ type: 'FETCH_FAILED', error: err.message });
           // setError(err.message);
           // setIsLoading(false);
@@ -54,7 +61,7 @@ const Show = () => {
     };
   }, [id]);
 
-  console.log('show', show);
+  // console.log('show', show);
 
   if (isLoading) {
     return <div>Data is being loaded</div>;
@@ -62,7 +69,37 @@ const Show = () => {
   if (error) {
     return <div>Error occured :{error}</div>;
   }
-  return <div>This is show page.</div>;
+
+  return (
+    <ShowPageWrapper>
+      <ShowMaineData
+        image={show.image}
+        name={show.name}
+        rating={show.rating}
+        summary={show.summary}
+        tags={show.genres}
+      />
+
+      <InfoBlock>
+        <h2>Details</h2>
+        <Details
+          status={show.status}
+          network={show.network}
+          premeired={show.premiered}
+        />
+      </InfoBlock>
+
+      <InfoBlock>
+        <div>Seasons</div>
+        <Seasons seasons={show._embedded.seasons} />
+      </InfoBlock>
+
+      <InfoBlock>
+        <h2>Casts</h2>
+        <Cast cast={show._embedded.cast} />
+      </InfoBlock>
+    </ShowPageWrapper>
+  );
 };
 
 export default Show;
